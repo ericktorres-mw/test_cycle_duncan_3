@@ -30,14 +30,9 @@ define(["require", "exports", "N/log", "./Functions/TransactionFunctions"], func
             });
             if (complementOrderMin) {
                 var customerId = newRecord.getValue({ fieldId: "entity" });
-                var minAmount = (0, TransactionFunctions_1.getCustomerMinimumOrderAmount)(customerId);
                 var subTotal = newRecord.getValue({ fieldId: "subtotal" });
-                //const eSurcharge = newRecord.getValue({ fieldId: "shippingcost" });
-                var currentTotal = Number(subTotal); // + Number(eSurcharge);
-                var complementaryMinAmount = Number(minAmount) - Number(currentTotal);
-                if (complementaryMinAmount <= 0) {
-                    return;
-                }
+                var minAmount = (0, TransactionFunctions_1.getCustomerMinimumOrderAmount)(customerId);
+                var complementaryMinAmount = (0, TransactionFunctions_1.calculateMinimumOrderAmount)(subTotal, minAmount);
                 newRecord.insertLine({ sublistId: "item", line: 0 });
                 newRecord.setSublistValue({
                     sublistId: "item",
@@ -70,6 +65,10 @@ define(["require", "exports", "N/log", "./Functions/TransactionFunctions"], func
                     value: complementaryMinAmount,
                 });
                 newRecord.commitLine({ sublistId: "item" });
+                newRecord.setValue({
+                    fieldId: "custbody_mw_complement_order_min",
+                    value: false,
+                });
             }
         }
         catch (error) {
